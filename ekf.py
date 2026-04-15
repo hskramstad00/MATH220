@@ -61,11 +61,11 @@ class EKF3D:
         # R from two sensors
         R = np.block([
             [self.R_aruco, np.zeros((2,1))],
-            [np.zeros((2,1)), self.R_tof]
+            [np.zeros((1,2)), self.R_tof]
         ])
  
         # ---- Kalman gain and state update ----
-        S = H @ P @ H.T + self.R
+        S = H @ P @ H.T + R
         K = P @ H.T @ np.linalg.inv(S)
  
         x_new = x + K @ innovation
@@ -73,3 +73,13 @@ class EKF3D:
  
         return x_new, P_new
 
+
+def calculate_dist(x_dist, fx, aruco_width):
+    if x_dist == 0:
+        return float('inf')
+    return (aruco_width * fx) / x_dist
+
+
+def calculate_bearing(center_x, cx, fx):
+    dx = center_x - cx
+    return -np.arctan(dx / fx)

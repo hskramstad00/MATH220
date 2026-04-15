@@ -8,6 +8,8 @@ class EKF3D:
     '''
     x: state [x, y, z]
     u_t: controlls [vx, vy, vz]
+    Q: process noise
+    R: meassurment noise
 
 
     '''
@@ -55,6 +57,12 @@ class EKF3D:
         # ---- Innovation ----
         innovation = z_measured - z_expected
         innovation[1] = wrap_angle(innovation[1])
+
+        # R from two sensors
+        R = np.block([
+            [self.R_aruco, np.zeros((2,1))],
+            [np.zeros((2,1)), self.R_tof]
+        ])
  
         # ---- Kalman gain and state update ----
         S = H @ P @ H.T + self.R

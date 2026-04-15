@@ -1,5 +1,4 @@
 import numpy as np
-from bearing_and_range import calculate_bearing, calculate_dist
 
 def wrap_angle(angle):
     return (angle + np.pi) % (2*np.pi) - np.pi
@@ -43,7 +42,7 @@ class EKF3D:
             # range (Aruco)
             r,
             # bearing (aruco)
-            np.arctan2(dx, dy),
+            np.arctan2(dy, dx),
             # tof-sensor height
             x[2]
         ])
@@ -83,3 +82,38 @@ def calculate_dist(x_dist, fx, aruco_width):
 def calculate_bearing(center_x, cx, fx):
     dx = center_x - cx
     return -np.arctan(dx / fx)
+
+
+def compute_speed(estimated_pose, waypoint, drone_height):
+    K_x = 30
+    K_y = 50
+    K_z = 30
+    ex, ey, ez = estimated_pose
+    wx, wy, wz = waypoint
+
+    x1 = wx - ex
+    y1 = wy- ey
+    # rember drone_height is in cm, wz is in meters
+    z1 = wz - ez
+
+    x_cmd = x1 * K_x
+    y_cmd = y1 * K_y
+    z_cmd = z1 * K_z
+
+    # clip speed
+    max_speed = 15
+    min_speed = -15
+    max_speed_z = 15
+ 
+    vy = int(np.clip(y_cmd,min_speed, max_speed)) 
+    vx = int(np.clip(x_cmd, min_speed, max_speed))
+    vz = int(np.clip(z_cmd, min_speed, max_speed_z))
+
+    return vy, vx, vz
+
+def do_something_speed(speed, min_value):
+    if speed == 0:
+        return 0
+    if abs(speed) < min_value:
+        return min_value if speed > 0 else -min_value
+    return speed

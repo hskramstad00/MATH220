@@ -90,9 +90,10 @@ while True:
             if marker_id not in markers:
                 continue
  
+            pts = corner[0]
  
             # Range
-            x_dist  = int(corner[1][0] - corner[0][0])
+            x_dist = int(corner[1][0] - corner[0][0])
             range_meas = calculate_dist(x_dist, fx, aruco_width)
  
             if range_meas == float('inf') or range_meas > 10.0:

@@ -58,16 +58,14 @@ class EKF3D:
 
 
         # R from uncertantiy in Aruco meassurment
-        R = np.block([
-            [self.R_aruco, np.zeros((2,1))]
-            ])
+        R = self.R_aruco
  
         # ---- Kalman gain and state update ----
         S = H @ P @ H.T + R
         K = P @ H.T @ np.linalg.inv(S)
  
         x_new = x + K @ innovation
-        P_new = (np.eye(2) - K @ H) @ P
+        P_new = (np.eye(3) - K @ H) @ P
  
         return x_new, P_new
     
@@ -86,22 +84,22 @@ class EKF3D:
         ])
 
         # H matrix would be identity since tof is linear
-        H = np.eye(1)
+        H = np.array([
+            [0, 0, 1]
+        ])
 
         # innovation, only looking at 
         innovation = z_measured - z_expected
 
         # R from uncerntanity in TOF measurments
-        R = np.block([
-            [self.R_tof, np.zeros((1,1))]
-        ])
+        R = self.R_tof
 
         # Kalman gain and state update
         S = H @ P @ H.T + R
         K = P @ H.T @ np.linalg.inv(S)
 
         x_new = x + K @ innovation
-        P_new = (np.eye(1) - K @ H) @ P
+        P_new = (np.eye(3) - K @ H) @ P
 
         return x_new, P_new
 

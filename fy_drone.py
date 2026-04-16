@@ -117,10 +117,7 @@ while True:
             bearing_meas = calculate_bearing(center_x, cx, fx)
 
             # z_measured: [range, bearing]
-            z_measured_Aruco = np.array([range_meas, bearing_meas, tof_height])
-
-            # z_meassured: [height]
-            z_measured_TOF = np.array([tof_height])
+            z_measured_Aruco = np.array([range_meas, bearing_meas])
 
             # EKF update
             x, P = ekf.update_ARUCO(x, P, z_measured_Aruco, markers[marker_id])
@@ -132,11 +129,11 @@ while True:
                         (int(center_x), int(pts[0][1]) - 10),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
             
-        # z_meassured: [height]
-        z_measured_TOF = np.array([tof_height])
+    # z_meassured: [height]
+    z_measured_TOF = np.array([tof_height])
 
-        # EKF update form TOF sensor after looking at all arucos in the frame
-        x, P = ekf.update_TOF(x, P, z_measured_TOF)
+    # EKF update form TOF sensor after looking at all arucos in the frame
+    x, P = ekf.update_TOF(x, P, z_measured_TOF)
 
     # ---- Waypoint-styring ----
     check = (now - time_start) if time_start else 0

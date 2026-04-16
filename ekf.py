@@ -30,13 +30,13 @@ class EKF3D:
 
         return x_pred, P_pred
 
-    def update(self, x, P, z_measured, marker_position):
+    def update_ARUCO(self, x, P, z_measured, marker_position):
         mx, my, mz = marker_position[0], marker_position[1], marker_position[2]
         dx = mx - x[0]
         dy = my - x[1]
         dz = mz - x[2]
 
-        q2d = dx**2 + dy**2
+        q2d = dx**2 + dy**2 
         q3d = q2d + dz**2
         r3d = np.sqrt(q3d)
 
@@ -45,34 +45,66 @@ class EKF3D:
             r3d,
             # bearing (aruco)
             np.arctan2(dy, dx),
-            # tof-sensor height
-            x[2]
         ])
 
         H = np.array([
             [-dx / r3d, -dy / r3d,  -dz/r3d],
-            [ dy / q2d, -dx / q2d,  0],
-            [ 0,       0,       1],
+            [ dy / q2d, -dx / q2d,  0]
         ])
  
         # ---- Innovation ----
         innovation = z_measured - z_expected
         innovation[1] = wrap_angle(innovation[1])
 
-        # R from two sensors
+
+        # R from uncertantiy in Aruco meassurment
         R = np.block([
-            [self.R_aruco, np.zeros((2,1))],
-            [np.zeros((1,2)), self.R_tof]
-        ])
+            [self.R_aruco, np.zeros((2,1))]
+            ])
  
         # ---- Kalman gain and state update ----
         S = H @ P @ H.T + R
         K = P @ H.T @ np.linalg.inv(S)
  
         x_new = x + K @ innovation
-        P_new = (np.eye(3) - K @ H) @ P
+        P_new = (np.eye(2) - K @ H) @ P
  
         return x_new, P_new
+    
+    def update_TOF(self, x, P, z_measured, marker_position):
+        '''
+        Update step for tof-sensor
+        x: last position
+        P: last covariance
+        z_measured: the meassured height from tof-sensor
+        marker_position: the actual position for the marker
+        '''
+
+        
+        # Expected meassurment
+        z_expected = np.array([
+            x[2]
+        ])
+
+        # H matrix would be identity since tof is linear
+        H = np.eye(1)
+
+        # innovation, only looking at 
+        innovation = z_measured - z_expected
+
+        # R from uncerntanity in TOF measurments
+        R = np.block([
+            [self.R_tof, np.zeros((1,1))]
+        ])
+
+        # Kalman gain and state update
+        S = H @ P @ H.T + R
+        K = P @ H.T @ np.linalg.inv(S)
+
+        x_new = x + K @ innovation
+        P_new = (np.eye(1) - K @ H) @ P
+
+
 
 
 def calculate_dist(x_dist, fx, aruco_width):
@@ -86,7 +118,7 @@ def calculate_bearing(center_x, cx, fx):
     return -np.arctan(dx / fx)
 
 
-def compute_speed(estimated_pose, waypoint, drone_height):
+def compute_speed(estimated_pose, waypoint):
     K_x = 30
     K_y = 50
     K_z = 30

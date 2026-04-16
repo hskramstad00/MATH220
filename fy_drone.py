@@ -116,11 +116,14 @@ while True:
             center_x = int((pts[0][0] + pts[1][0]) / 2)
             bearing_meas = calculate_bearing(center_x, cx, fx)
 
-            # z_measured: [range, bearing, height]
-            z_measured = np.array([range_meas, bearing_meas, tof_height])
+            # z_measured: [range, bearing]
+            z_measured_Aruco = np.array([range_meas, bearing_meas, tof_height])
+
+            # z_meassured: [height]
+            z_measured_TOF = np.array([tof_height])
 
             # EKF update
-            x, P = ekf.update(x, P, z_measured, markers[marker_id])
+            x, P = ekf.update_ARUCO(x, P, z_measured_Aruco, markers[marker_id])
             n_markers += 1
 
             # Tekst per markør
@@ -128,19 +131,26 @@ while True:
                         f"ID{marker_id} r={range_meas:.2f}m b={np.degrees(bearing_meas):.1f} deg",
                         (int(center_x), int(pts[0][1]) - 10),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+            
+        # z_meassured: [height]
+        z_measured_TOF = np.array([tof_height])
+
+        # EKF update form TOF sensor after looking at all arucos in the frame
+        x, P = ekf.update_TOF(x, P, z_measured_TOF)
 
     # ---- Waypoint-styring ----
     check = (now - time_start) if time_start else 0
 
     if check > 5 and current_waypoint < number_waypoint:
-        vy, vx, vz = compute_speed(x, waypoint[current_waypoint], tof_height)
+        vy, vx, vz = compute_speed(x, waypoint[current_waypoint])
         vy = do_something_speed(vy, min_speed_y)
         vx = do_something_speed(vx, min_speed_y)
         vz = do_something_speed(vz, min_speed_z)
 
         ex, ey, ez = x
         wx, wy, wz = waypoint[current_waypoint]
-        dist = np.linalg.norm([wx - ex, wy - ey, wz - tof_height])
+        # doubbel chhek - ez or tof-height?
+        dist = np.linalg.norm([wx - ex, wy - ey, wz - ez])
 
         if dist < waypoint_tolerance:
             print(f'Reached waypoint {current_waypoint}')

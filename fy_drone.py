@@ -94,11 +94,11 @@ while True:
     if has_taken_off:
         tello.send_rc_control(-vy, vx, vz, 0)
 
-    # ---- EKF prediksjon ----
+    # EKF prediction
     u = np.array([vx / 100.0, vy / 100.0, vz / 100.0])
     x, P = ekf.prediction(x, P, u, dt)
 
-    # ---- ArUco deteksjon og EKF update ----
+    # Aruco deteksjon
     corners, ids, _ = detector.detectMarkers(gray)
 
     n_markers = 0
@@ -141,7 +141,7 @@ while True:
     # EKF update form TOF sensor after looking at all arucos in the frame
     x, P = ekf.update_TOF(x, P, z_measured_TOF)
 
-    # ---- Waypoint-styring ----
+    # Waypoint styring
     check = (now - time_start) if time_start else 0
 
     if current_waypoint < number_waypoint:
@@ -152,7 +152,6 @@ while True:
 
         ex, ey, ez = x
         wx, wy, wz = waypoint[current_waypoint]
-        # doubbel chhek - ez or tof-height?
         dist = np.linalg.norm([wx - ex, wy - ey, wz - ez])
 
         if dist < waypoint_tolerance:
@@ -165,7 +164,7 @@ while True:
         tello.land()
         break
 
-    # ---- Vis info ----
+    # Info tekst
     cv2.putText(frame, f"EKF: x={x[0]:.2f} y={x[1]:.2f} z={x[2]:.2f}",
                 (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
 

@@ -71,13 +71,12 @@ class EKF3D:
  
         return x_new, P_new
     
-    def update_TOF(self, x, P, z_measured, marker_position):
+    def update_TOF(self, x, P, z_measured):
         '''
         Update step for tof-sensor
         x: last position
         P: last covariance
         z_measured: the meassured height from tof-sensor
-        marker_position: the actual position for the marker
         '''
 
         
@@ -103,6 +102,8 @@ class EKF3D:
 
         x_new = x + K @ innovation
         P_new = (np.eye(1) - K @ H) @ P
+
+        return x_new, P_new
 
 
 

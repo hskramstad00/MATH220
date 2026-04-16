@@ -62,7 +62,6 @@ last_time = time.time()
 
 vx, vy, vz = 0, 0, 0
 time_start = None
-tof_height = 0.8
 
 min_speed_y = 12
 min_speed_z = 10
@@ -83,7 +82,6 @@ while True:
     dt = now - last_time
     last_time = now
 
-    # ToF tidlig — trengs flere steder
     tof_height = tello.get_distance_tof() / 100.0
 
     # Hold dronen i lufta

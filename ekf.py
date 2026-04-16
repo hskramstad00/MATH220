@@ -31,16 +31,18 @@ class EKF3D:
         return x_pred, P_pred
 
     def update(self, x, P, z_measured, marker_position):
-        mx, my = marker_position[0], marker_position[1]
+        mx, my, mz = marker_position[0], marker_position[1], marker_position[2]
         dx = mx - x[0]
         dy = my - x[1]
+        dz = mz - x[2]
 
-        q = dx**2 + dy**2
-        r = np.sqrt(q)
+        q2d = dx**2 + dy**2
+        q3d = q2d + dz**2
+        r3d = np.sqrt(q3d)
 
         z_expected = np.array([
             # range (Aruco)
-            r,
+            r3d,
             # bearing (aruco)
             np.arctan2(dy, dx),
             # tof-sensor height
@@ -48,8 +50,8 @@ class EKF3D:
         ])
 
         H = np.array([
-            [-dx / r, -dy / r,  0],
-            [ dy / q, -dx / q,  0],
+            [-dx / r3d, -dy / r3d,  -dz/r3d],
+            [ dy / q2d, -dx / q2d,  0],
             [ 0,       0,       1],
         ])
  

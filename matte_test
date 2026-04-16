@@ -1,0 +1,9 @@
+import numpy as np
+from scipy.differentiate import jacobian
+
+
+
+
+h(x) = np.array([
+    [np.sqrt(dx**2  + dy **2 + dz**2)]
+])

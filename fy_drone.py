@@ -67,13 +67,19 @@ min_speed_y = 12
 min_speed_z = 10
 
 waypoint = np.array([
-    [0, 0, 1],
-    [1.5, 0, 0.5],
+    [0.1, 0, 1],
+    [1.7, 0, 1.2]
 ])
 
 current_waypoint = 0
 number_waypoint = len(waypoint)
-waypoint_tolerance = 0.1
+waypoint_tolerance = 0.05
+
+tello.takeoff()
+has_taken_off = True
+time_start = time.time()
+last_time = time.time()
+print("Taken off!")
 
 while True:
     frame = frame_reader.frame
@@ -138,7 +144,7 @@ while True:
     # ---- Waypoint-styring ----
     check = (now - time_start) if time_start else 0
 
-    if check > 5 and current_waypoint < number_waypoint:
+    if current_waypoint < number_waypoint:
         vy, vx, vz = compute_speed(x, waypoint[current_waypoint])
         vy = do_something_speed(vy, min_speed_y)
         vx = do_something_speed(vx, min_speed_y)
@@ -182,14 +188,6 @@ while True:
     cv2.imshow("EKF Test", frame)
 
     key = cv2.waitKey(1) & 0xFF
-
-    if key == ord('e') and not has_taken_off:
-        tello.takeoff()
-        sleep(0.5)
-        has_taken_off = True
-        time_start = time.time()
-        last_time = time.time()
-        print("Taken off!")
 
     if key == ord('q'):
         if has_taken_off:

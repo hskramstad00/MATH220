@@ -5,5 +5,13 @@
 # z = høyde 
 
 - marker_id: 20
-  position: [2.0, 0.0, 0.79]
+  position: [2.0, 0.0, 1.16]
+
+- marker_id: 0
+  position: [2.0, -0.73, 1.14]
+
+
+- marker_id: 2
+  position: [2.0, 0.60, 1.16]
+
  

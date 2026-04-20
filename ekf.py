@@ -52,7 +52,7 @@ class EKF3D:
             [ dy / q2d, -dx / q2d,  0]
         ])
  
-        # ---- Innovation ----
+        # Innovation
         innovation = z_measured - z_expected
         innovation[1] = wrap_angle(innovation[1])
 
@@ -60,7 +60,7 @@ class EKF3D:
         # R from uncertantiy in Aruco meassurment
         R = self.R_aruco
  
-        # ---- Kalman gain and state update ----
+        # Kalman gain and state update
         S = H @ P @ H.T + R
         K = P @ H.T @ np.linalg.inv(S)
  
